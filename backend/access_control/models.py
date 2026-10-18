@@ -118,6 +118,8 @@ class RolePermission(models.Model):
         return f"{self.role} → {self.permission}"
 
 
+
+
 class UserAssignment(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -134,6 +136,14 @@ class UserAssignment(models.Model):
     legal_entity = models.ForeignKey(
         LegalEntity,
         on_delete=models.PROTECT,
+        related_name="user_assignments",
+    )
+
+    plant = models.ForeignKey(
+        "organization.Plant",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="user_assignments",
     )
 
@@ -157,14 +167,33 @@ class UserAssignment(models.Model):
                     "role",
                     "legal_entity",
                     "organizational_unit",
+                    "plant",
                 ],
-                name="uq_user_role_org_assignment",
+                name="uq_user_role_org_plant_assignment",
             ),
         ]
 
     def clean(self):
         errors = {}
 
+        # Prevent assignments to inactive users, roles, or organizations.
+        if self.user_id and not self.user.is_active:
+            errors["user"] = "Inactive users cannot receive assignments."
+
+        if self.role_id and not self.role.is_active:
+            errors["role"] = "Inactive roles cannot be assigned."
+
+        if self.legal_entity_id and not self.legal_entity.is_active:
+            errors["legal_entity"] = (
+                "Assignments cannot be created for inactive legal entities."
+            )
+
+        if self.plant_id and not self.plant.is_active:
+            errors["plant"] = (
+                "Assignments cannot be created for inactive plants."
+            )
+
+        # Validate role scope.
         if self.role_id:
             if self.role.scope_level == Role.ScopeLevel.FUNCTIONAL_AREA:
                 if self.organizational_unit_id is not None:
@@ -173,30 +202,36 @@ class UserAssignment(models.Model):
                         "to one Organizational Unit."
                     )
 
-            if self.role.scope_level == Role.ScopeLevel.ORGANIZATIONAL_UNIT:
+            elif self.role.scope_level == Role.ScopeLevel.ORGANIZATIONAL_UNIT:
                 if self.organizational_unit_id is None:
                     errors["organizational_unit"] = (
                         "Organizational-unit roles require an Organizational Unit."
                     )
 
+        # Validate organizational-unit ownership.
         if self.organizational_unit_id and self.legal_entity_id:
             if self.organizational_unit.legal_entity_id != self.legal_entity_id:
                 errors["organizational_unit"] = (
                     "Organizational Unit must belong to the selected Legal Entity."
                 )
 
+        # Validate department scope.
         if (
             self.role_id
             and self.organizational_unit_id
             and self.role.department_id
+            and self.organizational_unit.department_id != self.role.department_id
         ):
-            if (
-                self.organizational_unit.department_id
-                != self.role.department_id
-            ):
-                errors["organizational_unit"] = (
-                    "Organizational Unit must match the department "
-                    "defined for this role."
+            errors["organizational_unit"] = (
+                "Organizational Unit must match the department "
+                "defined for this role."
+            )
+
+        # Validate plant ownership, even without an organizational unit.
+        if self.plant_id and self.legal_entity_id:
+            if self.plant.legal_entity_id != self.legal_entity_id:
+                errors["plant"] = (
+                    "Plant must belong to the selected Legal Entity."
                 )
 
         if errors:

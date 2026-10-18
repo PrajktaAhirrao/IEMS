@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,11 +43,16 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+
     'accounts',
     'organization',
     'access_control',
-    
+    'commercial',
+
+    # Employee Master
+    "employees",
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

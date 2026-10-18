@@ -18,4 +18,9 @@ frontend/dist/
 # IDE / OS
 .vscode/
 .DS_Store
-Thumbs.db
+Thumbs.dbbackend/Commercial_Credentials.txt
+backend/iems_full_database.json
+backend/backend_full_tree.txt
+backend/backend_tree.txt
+frontend/frontend_full_tree.txt
+frontend/frontend_tree.txt

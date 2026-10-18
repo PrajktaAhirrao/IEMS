@@ -1,11 +1,17 @@
+
 import { useState } from "react";
 import SignInForm from "./SignInForm";
 import AccessHelpModal from "./AccessHelpModal";
 
-export default function SignInPage() {
+type SignInPageProps = {
+  onLoginSuccess: () => void;
+};
 
+export default function SignInPage({
+  onLoginSuccess,
+}: SignInPageProps) {
   const [isAccessHelpOpen, setIsAccessHelpOpen] = useState(false);
-  
+
   return (
     <main className="signin-shell">
       <header className="signin-topbar">
@@ -65,7 +71,7 @@ export default function SignInPage() {
                 </p>
               </div>
 
-              <SignInForm />
+              <SignInForm onLoginSuccess={onLoginSuccess} />
 
               <div className="signin-support">
                 <div className="support-divider" />
@@ -92,10 +98,9 @@ export default function SignInPage() {
       </div>
 
       <AccessHelpModal
-      isOpen={isAccessHelpOpen}
-      onClose={() => setIsAccessHelpOpen(false)}
+        isOpen={isAccessHelpOpen}
+        onClose={() => setIsAccessHelpOpen(false)}
       />
-
     </main>
   );
 }

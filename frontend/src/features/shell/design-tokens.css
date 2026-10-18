@@ -1,0 +1,38 @@
+
+:root {
+  /* IEMS brand palette — aligned with the sign-in page */
+  --iems-navy: #354966;
+  --iems-navy-dark: #24364f;
+  --iems-navy-deep: #1b2b40;
+
+  --iems-coral: #e77858;
+  --iems-coral-hover: #d96849;
+
+  /* Enterprise desktop surfaces */
+  --iems-page: #e9eef4;
+  --iems-surface: #ffffff;
+  --iems-panel: #f4f7fa;
+  --iems-panel-heading: #e2e9f1;
+  --iems-border: #c7d2df;
+
+  /* Typography */
+  --iems-text: #26364d;
+  --iems-muted: #708096;
+  --iems-font: "Segoe UI", Arial, sans-serif;
+  --iems-mono-font: Consolas, "Courier New", monospace;
+
+  /* Status colors */
+  --iems-success: #16866b;
+  --iems-warning: #b7791f;
+  --iems-danger: #c44949;
+  --iems-info: #356da8;
+
+  /* Layout and interaction */
+  --iems-radius: 4px;
+  --iems-panel-radius: 5px;
+  --iems-border-width: 1px;
+  --iems-shadow:
+    0 2px 5px rgba(35, 52, 75, 0.06);
+  --iems-focus-ring:
+    0 0 0 3px rgba(231, 120, 88, 0.28);
+}

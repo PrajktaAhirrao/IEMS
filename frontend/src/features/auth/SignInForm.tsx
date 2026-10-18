@@ -1,4 +1,6 @@
-import { FormEvent, useState } from "react";
+
+import { useState } from "react";
+import type { FormEvent } from "react";
 
 type LoginResponse = {
   token: string;
@@ -13,7 +15,13 @@ type LoginResponse = {
   };
 };
 
-export default function SignInForm() {
+type SignInFormProps = {
+  onLoginSuccess: () => void;
+};
+
+export default function SignInForm({
+  onLoginSuccess,
+}: SignInFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +29,6 @@ export default function SignInForm() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [formError, setFormError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,7 +38,6 @@ export default function SignInForm() {
     setEmailError("");
     setPasswordError("");
     setFormError("");
-    setSuccessMessage("");
 
     if (!email.trim()) {
       setEmailError("Work email is required.");
@@ -82,9 +88,7 @@ export default function SignInForm() {
       };
 
       if (!response.ok) {
-        setFormError(
-          data.detail || "Unable to sign in.",
-        );
+        setFormError(data.detail || "Unable to sign in.");
         return;
       }
 
@@ -94,13 +98,9 @@ export default function SignInForm() {
         JSON.stringify(data.user),
       );
 
-      setSuccessMessage(
-        `Signed in as ${data.user.email}`,
-      );
+      onLoginSuccess();
     } catch {
-      setFormError(
-        "Unable to connect to the IEMS server.",
-      );
+      setFormError("Unable to connect to the IEMS server.");
     } finally {
       setIsSubmitting(false);
     }
@@ -113,41 +113,28 @@ export default function SignInForm() {
       noValidate
     >
       <div className="form-field">
-        <label htmlFor="email">
-          Work email
-        </label>
+        <label htmlFor="email">Work email</label>
 
         <input
           id="email"
           type="email"
           autoComplete="email"
           value={email}
-          onChange={(event) =>
-            setEmail(event.target.value)
-          }
-          className={
-            emailError ? "input-error" : ""
-          }
+          onChange={(event) => setEmail(event.target.value)}
+          className={emailError ? "input-error" : ""}
           placeholder="name@company.com"
         />
 
         {emailError && (
-          <p className="field-error">
-            {emailError}
-          </p>
+          <p className="field-error">{emailError}</p>
         )}
       </div>
 
       <div className="form-field">
         <div className="password-label-row">
-          <label htmlFor="password">
-            Password
-          </label>
+          <label htmlFor="password">Password</label>
 
-          <button
-            type="button"
-            className="text-action"
-          >
+          <button type="button" className="text-action">
             Forgot password?
           </button>
         </div>
@@ -155,21 +142,11 @@ export default function SignInForm() {
         <div className="password-input-wrap">
           <input
             id="password"
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             value={password}
-            onChange={(event) =>
-              setPassword(event.target.value)
-            }
-            className={
-              passwordError
-                ? "input-error"
-                : ""
-            }
+            onChange={(event) => setPassword(event.target.value)}
+            className={passwordError ? "input-error" : ""}
             placeholder="Enter your password"
           />
 
@@ -177,34 +154,20 @@ export default function SignInForm() {
             type="button"
             className="password-toggle"
             onClick={() =>
-              setShowPassword(
-                (current) => !current,
-              )
+              setShowPassword((current) => !current)
             }
           >
-            {showPassword
-              ? "Hide"
-              : "Show"}
+            {showPassword ? "Hide" : "Show"}
           </button>
         </div>
 
         {passwordError && (
-          <p className="field-error">
-            {passwordError}
-          </p>
+          <p className="field-error">{passwordError}</p>
         )}
       </div>
 
       {formError && (
-        <div className="form-message error">
-          {formError}
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="form-message success">
-          {successMessage}
-        </div>
+        <div className="form-message error">{formError}</div>
       )}
 
       <button
@@ -212,16 +175,10 @@ export default function SignInForm() {
         className="signin-button"
         disabled={isSubmitting}
       >
-        <span>
-          {isSubmitting
-            ? "Signing in..."
-            : "Sign in"}
-        </span>
+        <span>{isSubmitting ? "Signing in..." : "Sign in"}</span>
 
         {!isSubmitting && (
-          <span className="button-arrow">
-            →
-          </span>
+          <span className="button-arrow">→</span>
         )}
       </button>
     </form>
