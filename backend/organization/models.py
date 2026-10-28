@@ -221,6 +221,7 @@ class OrganizationalUnit(models.Model):
         ]
 
     def clean(self):
+        super().clean()
         errors = {}
 
         if self.department_id:
@@ -257,3 +258,104 @@ class OrganizationalUnit(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ManagementLevel(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100, unique=True)
+    rank = models.PositiveSmallIntegerField(unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["rank", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Position(models.Model):
+    code = models.CharField(max_length=80, unique=True)
+    title = models.CharField(max_length=150)
+
+    functional_area = models.ForeignKey(
+        FunctionalArea,
+        on_delete=models.PROTECT,
+        related_name="positions",
+    )
+
+    # Optional primary department. A position may serve other departments
+    # through service_scope without having a primary department.
+    department = models.ForeignKey(
+        DepartmentDefinition,
+        on_delete=models.PROTECT,
+        related_name="positions",
+        null=True,
+        blank=True,
+    )
+
+    # Many-to-many: one position can serve multiple departments,
+    # and each department can be served by multiple positions.
+    service_scope = models.ManyToManyField(
+        DepartmentDefinition,
+        blank=True,
+        related_name="service_positions",
+    )
+
+    management_level = models.ForeignKey(
+        ManagementLevel,
+        on_delete=models.PROTECT,
+        related_name="positions",
+    )
+
+    # Directed self-relation:
+    # this position can report to multiple manager positions.
+    # A manager position can oversee multiple subordinate positions.
+    reporting_managers = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        blank=True,
+        related_name="positions_reporting_to_me",
+    )
+
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = [
+            "functional_area__name",
+            "department__name",
+            "management_level__rank",
+            "title",
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["department", "title"],
+                name="uq_position_title_per_department",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        # Validate the primary department only when one is assigned.
+        if self.department_id and self.functional_area_id:
+            if (
+                self.department.functional_area_id
+                != self.functional_area_id
+            ):
+                errors["department"] = (
+                    "The department must belong to "
+                    "the selected functional area."
+                )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.code} — {self.title}"

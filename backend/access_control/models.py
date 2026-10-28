@@ -243,3 +243,66 @@ class UserAssignment(models.Model):
 
     def __str__(self):
         return f"{self.user} — {self.role}"
+
+
+
+class UserAccessEvent(models.Model):
+    class EventType(models.TextChoices):
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        REVOKED = "REVOKED", "Revoked"
+        RESTORED = "RESTORED", "Restored"
+        OVERDUE_REMINDER = "OVERDUE_REMINDER", "Overdue Reminder"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="access_events",
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="performed_access_events",
+    )
+    event_type = models.CharField(
+        max_length=30,
+        choices=EventType.choices,
+    )
+    reason = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["event_type", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} — {self.event_type}"
+
+class ERPAccessEligibilityPolicy(models.Model):
+    position = models.OneToOneField(
+        "organization.Position",
+        on_delete=models.PROTECT,
+        related_name="erp_eligibility_policy",
+    )
+
+    is_eligible = models.BooleanField(default=False)
+    approval_required = models.BooleanField(default=True)
+    max_accounts = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+    is_active = models.BooleanField(default=True)
+    reason = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["position__code"]
+
+    def __str__(self):
+        status = "Eligible" if self.is_eligible else "Not eligible"
+        return f"{self.position.code} — {status}"

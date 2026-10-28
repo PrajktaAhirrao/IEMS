@@ -24,3 +24,9 @@ backend/backend_full_tree.txt
 backend/backend_tree.txt
 frontend/frontend_full_tree.txt
 frontend/frontend_tree.txt
+
+# Local credentials / sensitive files
+backend/Commercial_Credentials.txt
+
+# Local database/project backup
+backend/iems_before_hr_approval.backup

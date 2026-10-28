@@ -107,6 +107,13 @@ class Employee(models.Model):
         related_name="employees",
     )
     designation = models.CharField(max_length=150, blank=True)
+    position = models.ForeignKey(
+        "organization.Position",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="employees",
+    )
     reporting_manager = models.ForeignKey(
         "self",
         on_delete=models.PROTECT,
@@ -498,4 +505,5 @@ class EmployeeTraining(models.Model):
 
     def __str__(self):
         return f"{self.employee.employee_code} — {self.training_name}"
+
 

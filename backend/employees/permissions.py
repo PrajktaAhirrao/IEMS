@@ -45,11 +45,12 @@ class HasEmployeeMasterPermission(BasePermission):
             plant_id = request.data.get("plant")
 
         # Central HR may list all plants in its assigned legal entity.
+
+        # The list view applies the entity and plant scope to the queryset.
+        # Central HR can list entity-wide; plant HR can list its assigned plants.
         if request.method == "GET" and not plant_id:
-            return assignments.filter(
-                role__code="CENTRAL_HR",
-                plant__isnull=True,
-            ).exists()
+            return True
+
 
         if not plant_id or not str(plant_id).isdigit():
             return False
